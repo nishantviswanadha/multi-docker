@@ -1,0 +1,23 @@
+sudo: required
+services:
+  -docker
+
+before_install:
+  - docker build -t viswanis/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run viswanis/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t viswanis/multi-client ./client
+  - docker build -t viswanis/multi-nginx ./nginx
+  - docker build -t viswanis/multi-server ./server
+  - docker build -t viswanis/multi-worker ./worker
+
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+
+  - docker push viswanis/multi-client
+  - docker push viswanis/multi-nginx
+  - docker push viswanis/multi-server
+  - docker push viswanis/multi-worker
+  
